@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 IMAGE=srasku-dev:ubuntu-latest
 docker build -f Docker/Dockerfile -t ${IMAGE} .
