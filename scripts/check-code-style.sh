@@ -4,6 +4,6 @@
 # shellcheck disable=SC2086
 
 SCM_DIR=$(dirname "$0")/scm/hg
-SH_FILES=$("${SCM_DIR}/ls-files.sh" | grep -v '^?' | grep '\.sh$' | cut -d' ' -f2- | tr '\n' ' ')
+SH_FILES=$("${SCM_DIR}/ls-files.sh" | grep '\.sh$' | tr '\n' ' ')
 
 shellcheck ${SH_FILES}
