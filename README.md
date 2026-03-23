@@ -7,7 +7,7 @@ Claude coding agent.  You can install additional dependencies by adding
 them to `Docker/Dockerfile`.  You can run a command inside the container
 by running:
 
-    $ ./in-container.sh <command>
+    $ ./in-container <command>
 
 This environment isolates the file-system to just the current directory which
 is mounted inside the container as the home directory.  This prevents Claude
@@ -17,7 +17,7 @@ from having access to the entire filesystem on the host.
 
 In order to configure Claude, run:
 
-    $ ./in-container.sh claude
+    $ ./in-container claude
 
 And follow the directions on the screen.
 
