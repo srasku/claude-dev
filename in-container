@@ -9,4 +9,5 @@ docker run \
     -it \
     -v "$(pwd):/home/develop" \
     -v "$(pwd)/Docker/.claude.json:/root/.claude.json" \
+    -v "$(pwd)/Docker/.claude:/root/.claude" \
     --rm ${IMAGE} "$@"
