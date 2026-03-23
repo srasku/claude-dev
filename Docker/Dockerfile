@@ -13,3 +13,5 @@ ENV HOME_DIR /home/develop
 WORKDIR ${HOME_DIR}
 
 RUN curl -fSsL https://claude.ai/install.sh | bash
+
+ENV PATH $PATH:/root/.local/bin

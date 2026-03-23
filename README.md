@@ -17,7 +17,7 @@ from having access to the entire filesystem on the host.
 
 In order to configure Claude, run:
 
-    $ ./in-container.sh /root/.local/bin/claude
+    $ ./in-container.sh claude
 
 And follow the directions on the screen.
 
