@@ -3,11 +3,53 @@
 IMAGE=claude-dev:latest
 DOCKER_BUILDKIT=0 docker build -f Docker/Dockerfile -t ${IMAGE} Docker
 
-CLAUDE_SETTINGS=Docker/.claude.json
-test -s ${CLAUDE_SETTINGS} || echo "{}" > ${CLAUDE_SETTINGS}
+VOLUME_NAME="in-container-home"
+
+CODE_ROOT="$HOME/Code"
+ABS_PATH="$(pwd)"
+case "$ABS_PATH" in
+    "$CODE_ROOT"/*) REL_PATH="${ABS_PATH#"$CODE_ROOT"/}" ;;
+    *)              REL_PATH="${ABS_PATH#/}" ;;
+esac
+REPO_PATH="/home/develop/${REL_PATH}"
+
+if [ -d Docker/.claude ]; then
+    # One-time, idempotent migration of legacy per-repo state into the
+    # shared volume. Guarded by presence of the legacy files (not volume
+    # existence), so it still runs for sibling repos even after another
+    # repo has already created the volume. `cp -a SRC DST` copies SRC
+    # itself into DST when DST already exists (creating DST/basename(SRC))
+    # instead of merging SRC's contents into it, so once a prior repo has
+    # already populated /dest/.claude, a plain `cp -a /src /dest/.claude`
+    # would nest this repo's state under /dest/.claude/src/ rather than
+    # merging it in. mkdir + `cp -a /src/.` merges correctly whether or
+    # not /dest/.claude already exists.
+    docker run --rm -v "$(pwd)/Docker/.claude:/src:ro" -v "${VOLUME_NAME}:/dest" \
+        ${IMAGE} sh -c 'mkdir -p /dest/.claude && cp -a /src/. /dest/.claude/'
+
+    # Best-effort: carry this repo's history/memory forward to the new
+    # per-repo project key so it's picked up by future sessions.
+    NEW_KEY="-home-develop-$(printf '%s' "$REL_PATH" | tr '/' '-')"
+    docker run --rm -v "${VOLUME_NAME}:/dest" ${IMAGE} sh -c "
+        [ -d /dest/.claude/projects/-home-develop ] && [ ! -e \"/dest/.claude/projects/${NEW_KEY}\" ] &&
+        cp -a /dest/.claude/projects/-home-develop \"/dest/.claude/projects/${NEW_KEY}\"
+        exit 0
+    "
+    rm -rf Docker/.claude
+fi
+if [ -s Docker/.claude.json ]; then
+    docker run --rm -v "$(pwd)/Docker/.claude.json:/src.json:ro" -v "${VOLUME_NAME}:/dest" \
+        ${IMAGE} cp -a /src.json /dest/.claude.json
+    rm -f Docker/.claude.json
+fi
+
+docker run --rm -v "${VOLUME_NAME}:/home/develop" ${IMAGE} \
+    sh -c 'test -s /home/develop/.claude.json || echo "{}" > /home/develop/.claude.json'
+
 docker run \
     -it \
-    -v "$(pwd):/home/develop" \
-    -v "$(pwd)/Docker/.claude.json:/root/.claude.json" \
-    -v "$(pwd)/Docker/.claude:/root/.claude" \
+    -e HOME=/home/develop \
+    --mount type=volume,source="${VOLUME_NAME}",target=/home/develop \
+    --mount type=bind,source="$(pwd)",target="${REPO_PATH}" \
+    --workdir "${REPO_PATH}" \
     --rm ${IMAGE} "$@"
