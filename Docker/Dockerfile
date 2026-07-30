@@ -5,6 +5,7 @@ RUN set -ex && \
     apt-get install -y \
         build-essential \
         curl \
+        gh \
         git \
         gdb \
         mercurial \
