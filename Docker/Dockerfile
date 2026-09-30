@@ -3,6 +3,7 @@ FROM ubuntu:24.04
 RUN set -ex && \
     apt-get update && \
     apt-get install -y \
+        ack-grep \
         build-essential \
         curl \
         gh \
