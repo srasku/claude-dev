@@ -1,7 +1,10 @@
 #!/bin/sh -e
 
 IMAGE=claude-dev:latest
-DOCKER_BUILDKIT=0 docker build -f Docker/Dockerfile -t ${IMAGE} Docker
+DOCKER_BUILDKIT=0 docker build \
+    --build-arg CLAUDE_VERSION \
+    -f Docker/Dockerfile \
+    -t ${IMAGE} Docker
 
 VOLUME_NAME="in-container-home"
 
