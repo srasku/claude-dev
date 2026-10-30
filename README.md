@@ -9,9 +9,16 @@ by running:
 
     $ ./in-container <command>
 
-This environment isolates the file-system to just the current directory which
-is mounted inside the container as the home directory.  This prevents Claude
-from having access to the entire filesystem on the host.
+This environment isolates Claude from the host filesystem.  It can only see
+the current directory and the container's home directory.
+
+The current directory is mounted under the home directory, `/home/develop`.
+The path is relative to `~/Code` on the host.  For example, `~/Code/AI/Claude`
+is mounted at `/home/develop/AI/Claude`.  Directories outside `~/Code` use
+their full path.
+
+The home directory is the `in-container-home` Docker volume.  It is shared by
+every repo that uses `in-container`, just like a normal home directory.
 
 ## Configure Claude
 
@@ -25,9 +32,9 @@ When it asks you to trust the folder, select the "Yes, I trust this
 folder" option.  Otherwise, Claude won't be able to do anything.
 
 You can continue to use Claude in subsequent sessions once it's
-configured.  It will save the configuration in `Docker/.claude.json`.
-It mounts the file inside the container so you don't need to
-re-authorize again unless you delete the file.
+configured.  The configuration is saved in the `in-container-home`
+volume, along with other settings like `gh` credentials.  You don't
+need to re-authorize unless you delete the volume.
 
 ## Run a Specific Version of Claude
 
